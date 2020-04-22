@@ -8,7 +8,6 @@ require 'nokogiri'
 require 'open-uri'
 require 'colorize'
 
-
 module ProductHunt
   class Error < StandardError; end
   # Your code goes here...
