@@ -1,6 +1,6 @@
 class Product
 
-    attr_accessor :name, :url, :description
+    attr_accessor :name, :url, :upvotes, :short_description, :long_description, :makers
 
     @@all = []
 
@@ -13,6 +13,10 @@ class Product
         products_array.each do |product|
           new_product = Product.new(product)
         end
+    end
+
+    def add_product_details(attributes_hash)
+        attributes_hash.each {|key, value| self.send(("#{key}="), value)}
     end
 
     def self.all
