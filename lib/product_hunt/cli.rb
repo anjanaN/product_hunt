@@ -1,6 +1,9 @@
 class ProductHunt::CLI
     def call
         puts "Welcome to Product Hunt!"
+        sleep(1)
+        puts "Loading today's products..."
+        sleep(1)
         make_products
         display_products
         get_user_input
@@ -12,12 +15,12 @@ class ProductHunt::CLI
     end
 
     def display_products
-        Product.all.each do |product|
-            if product.name != ""
-                puts "#{product.name}".colorize(:blue)
-                puts "  Description:".colorize(:light_blue) + " #{product.short_description}"
-                puts "----------------------".colorize(:green)
-            end
+        Product.all.delete_if { |product| product.name == "" || !product.url.value.start_with?("/posts/") }
+        Product.all.each.with_index(1) do |product, index|
+            puts "#{index}. #{product.name}".colorize(:blue)
+            puts "  Upvotes:".colorize(:light_blue) + " ⬆ #{product.upvotes}"
+            puts "  Description:".colorize(:light_blue) + " #{product.short_description}"
+            puts "----------------------".colorize(:green)
         end
     end
 
@@ -27,10 +30,11 @@ class ProductHunt::CLI
         
         if valid_product(user_input)
             show_product_details(user_input)
-        elsif user_input == "exit"
+        elsif user_input.downcase == "exit"
             puts "Thanks! Have a great day!"
         elsif !valid_product(user_input)
-            puts "That product doesn't exist. Please check your spelling and try again."
+            puts "That Product ID doesn't exist. Please try again."
+            sleep(3)
             display_products
             get_user_input
         end
@@ -38,16 +42,14 @@ class ProductHunt::CLI
 
     def show_product_details(product_name)
         attributes = ProductHunt::Scraper.scrape_specific_product(product_name)
-        chosen_product = Product.all.select { |product| product.name == product_name}
-        chosen_product[0].add_product_details(attributes)
+        # chosen_product = Product.all.select { |product| product.name == product_name}
+        chosen_product = Product.all[product_name.to_i - 1]
+        chosen_product.add_product_details(attributes)
 
-        puts "#{chosen_product[0].name}".colorize(:blue)
-        puts "  Upvotes:".colorize(:light_blue) + " #{chosen_product[0].upvotes}"
-        puts "  Description:".colorize(:light_blue) + " #{chosen_product[0].long_description}"
-        puts "  Makers:".colorize(:light_blue)
-        chosen_product[0].makers.each do |maker|
-            puts "\n#{maker}"
-        end
+        puts "\n\n\n"
+        puts "#{chosen_product.name}".colorize(:blue)
+        puts "  Upvotes:".colorize(:light_blue) + " #{chosen_product.upvotes}"
+        puts "  Description:".colorize(:light_blue) + " #{chosen_product.long_description}"
         puts "----------------------".colorize(:green)
     end
 
@@ -57,7 +59,11 @@ class ProductHunt::CLI
         `open #{open_link}`
     end
 
-    def valid_product(product_name)
-        Product.all.any? { |product| product.name == product_name}
+    def valid_product(product_id)
+        if product_id.to_i > 0 && product_id.to_i <= Product.all.length
+            true
+        else
+            false
+        end
     end
 end
