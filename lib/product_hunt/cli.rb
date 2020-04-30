@@ -25,7 +25,7 @@ class ProductHunt::CLI
     end
 
     def get_user_input
-        puts "Enter which product you'd like to see more details about or 'exit' to leave:"
+        puts "Enter the Product ID of the product you'd like to see more details about or 'exit' to leave:"
         user_input = gets.strip
         
         if valid_product(user_input)
@@ -40,22 +40,33 @@ class ProductHunt::CLI
         end
     end
 
-    def show_product_details(product_name)
-        attributes = ProductHunt::Scraper.scrape_specific_product(product_name)
-        # chosen_product = Product.all.select { |product| product.name == product_name}
-        chosen_product = Product.all[product_name.to_i - 1]
+    def show_product_details(product_id)
+        attributes = ProductHunt::Scraper.scrape_specific_product(product_id)
+        chosen_product = Product.all[product_id.to_i - 1]
         chosen_product.add_product_details(attributes)
 
         puts "\n\n\n"
         puts "#{chosen_product.name}".colorize(:blue)
-        puts "  Upvotes:".colorize(:light_blue) + " #{chosen_product.upvotes}"
+        puts "\n  Upvotes:".colorize(:light_blue) + " #{chosen_product.upvotes}"
         puts "  Description:".colorize(:light_blue) + " #{chosen_product.long_description}"
         puts "----------------------".colorize(:green)
+
+        puts "Type 'open' to open this product page in your browser or 'menu' to go back to listed products"
+        input = gets.strip
+
+        if input == "open"
+            open_product_site(product_id)
+            display_products
+            get_user_input
+        elsif input == "menu"
+            display_products
+            get_user_input
+        end
     end
 
-    def open_product_site(product_name)
-        chosen_product = Product.all.select { |product| product.name == product_name}
-        open_link = "https://www.producthunt.com#{chosen_product[0].url.value}"
+    def open_product_site(product_id)
+        chosen_product = Product.all[product_id.to_i - 1]
+        open_link = "https://www.producthunt.com#{chosen_product.url.value}"
         `open #{open_link}`
     end
 
