@@ -4,6 +4,7 @@ class ProductHunt::CLI
         sleep(1)
         puts "Loading today's products..."
         sleep(1)
+        puts "\n\n"
         make_products
         display_products
         get_user_input
@@ -45,22 +46,31 @@ class ProductHunt::CLI
         chosen_product = Product.all[product_id.to_i - 1]
         chosen_product.add_product_details(attributes)
 
-        puts "\n\n\n"
+        puts "\n\n"
         puts "#{chosen_product.name}".colorize(:blue)
         puts "\n  Upvotes:".colorize(:light_blue) + " #{chosen_product.upvotes}"
         puts "  Description:".colorize(:light_blue) + " #{chosen_product.long_description}"
         puts "----------------------".colorize(:green)
 
+        display_more_info
+    end
+
+    def display_more_info
         puts "Type 'open' to open this product page in your browser or 'menu' to go back to listed products"
         input = gets.strip
 
-        if input == "open"
-            open_product_site(product_id)
-            display_products
-            get_user_input
-        elsif input == "menu"
-            display_products
-            get_user_input
+        if valid_action(input)
+            if input == "open"
+                open_product_site(product_id)
+                display_products
+                get_user_input
+            elsif input == "menu"
+                display_products
+                get_user_input
+            end
+        elsif !valid_action(input)
+            puts "Your input was invalid.\n"
+            display_more_info
         end
     end
 
@@ -72,6 +82,14 @@ class ProductHunt::CLI
 
     def valid_product(product_id)
         if product_id.to_i > 0 && product_id.to_i <= Product.all.length
+            true
+        else
+            false
+        end
+    end
+
+    def valid_action(action)
+        if action == "open" || action == "menu"
             true
         else
             false
